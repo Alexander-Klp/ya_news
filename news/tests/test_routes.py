@@ -1,9 +1,10 @@
 from http import HTTPStatus
+
 from django.test import TestCase
 from django.urls import reverse
-from news.models import Comment, News
-
 from django.contrib.auth import get_user_model
+
+from news.models import Comment, News
 
 User = get_user_model()
 
@@ -23,13 +24,16 @@ class TestRoutes(TestCase):
     def test_pages_availability(self):
         urls = (
             ('news:home', None),
-            ('news:detail', (self.news.id,))
+            ('news:detail', (self.news.id,)),
+            ('users:login', None),
+            ('users:logout', None),
+            ('users:signup', None),
         )
         for name, args in urls:
             with self.subTest(name=name):
                 url = reverse(name, args=args)
                 response = self.client.get(url)
-                self.assertEqual(response.status_code, HTTPStatus.OK)
+                self.assertEqual(response.status_code, HTTPStatus.OK) 
     
     def test_availability_for_comment_edit_and_delete(self):
         users_statuses = (
