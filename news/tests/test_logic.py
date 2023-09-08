@@ -22,11 +22,11 @@ class TestCommentCreation(TestCase):
         cls.auth_client.force_login(cls.user)
         cls.form_data = {'text': cls.COMMENT_TEXT}
 
-    def test_anonymous_user_cant_create_comment(self):   
+    def test_anonymous_user_cant_create_comment(self):
         self.client.post(self.url, data=self.form_data)
         comments_count = Comment.objects.count()
         self.assertEqual(comments_count, 0)
-    
+
     def test_user_can_create_comment(self):
         response = self.auth_client.post(self.url, data=self.form_data)
         self.assertRedirects(response, f'{self.url}#comments')
@@ -49,6 +49,7 @@ class TestCommentCreation(TestCase):
         comments_count = Comment.objects.count()
         self.assertEqual(comments_count, 0)
 
+
 class TestCommentEditDelete(TestCase):
     COMMENT_TEXT = 'Текст комментария'
     NEW_COMMENT_TEXT = 'Обновлённый комментарий'
@@ -70,26 +71,27 @@ class TestCommentEditDelete(TestCase):
             text=cls.COMMENT_TEXT
         )
         cls.edit_url = reverse('news:edit', args=(cls.comment.id,))
-        cls.delete_url = reverse('news:delete', args=(cls.comment.id,))  
+        cls.delete_url = reverse('news:delete', args=(cls.comment.id,))
         cls.form_data = {'text': cls.NEW_COMMENT_TEXT}
-    
+
     def test_author_can_delete_comment(self):
         response = self.author_client.delete(self.delete_url)
         self.assertRedirects(response, self.url_to_comments)
         comments_count = Comment.objects.count()
-    
+        self.assertEqual(comments_count, 0)
+
     def test_user_cant_delete_comment_of_another_user(self):
         response = self.reader_client.delete(self.delete_url)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         comments_count = Comment.objects.count()
         self.assertEqual(comments_count, 1)
-    
+
     def test_author_can_edit_comment(self):
         response = self.author_client.post(self.edit_url, data=self.form_data)
         self.assertRedirects(response, self.url_to_comments)
         self.comment.refresh_from_db()
         self.assertEqual(self.comment.text, self.NEW_COMMENT_TEXT)
-    
+
     def test_user_cant_edit_comment_of_another_user(self):
         response = self.reader_client.post(self.edit_url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)

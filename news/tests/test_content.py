@@ -1,16 +1,14 @@
-# news/tests/test_content.py
 from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from django.contrib.auth import get_user_model
 
 from news.models import Comment, News
 
 User = get_user_model()
-
 
 
 class TestHomePage(TestCase):
@@ -42,6 +40,7 @@ class TestHomePage(TestCase):
         sorted_dates = sorted(all_dates, reverse=True)
         self.assertEqual(all_dates, sorted_dates)
 
+
 class TestDetailPage(TestCase):
 
     @classmethod
@@ -58,19 +57,19 @@ class TestDetailPage(TestCase):
             )
             comment.created = now + timedelta(days=index)
             comment.save()
-    
+
     def test_comments_order(self):
         response = self.client.get(self.detail_url)
         self.assertIn('news', response.context)
         news = response.context['news']
         all_comments = news.comment_set.all()
         self.assertLess(all_comments[0].created, all_comments[1].created)
-    
+
     def test_anonymous_client_has_no_form(self):
         response = self.client.get(self.detail_url)
         self.assertNotIn('form', response.context)
-        
+
     def test_authorized_client_has_form(self):
         self.client.force_login(self.author)
         response = self.client.get(self.detail_url)
-        self.assertIn('form', response.context) 
+        self.assertIn('form', response.context)
